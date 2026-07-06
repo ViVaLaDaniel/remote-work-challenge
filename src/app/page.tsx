@@ -11,6 +11,7 @@ export default function Home() {
 					task packages, and anonymous progress updates.
 				</p>
 				<Link href="/challenge">Open challenge page</Link>
+				<Link href="/login">Login</Link>
 			</section>
 		</main>
 	);

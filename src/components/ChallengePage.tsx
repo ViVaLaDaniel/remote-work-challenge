@@ -328,6 +328,7 @@ export function ChallengePage({
 					<a href="#packages">Tasks</a>
 					<a href="#live">Live</a>
 					<a href="#contact">Contact</a>
+					<Link href="/login">Login</Link>
 				</div>
 			</nav>
 

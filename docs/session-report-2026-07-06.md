@@ -41,11 +41,14 @@ Observed status `200`, correct H1, live placeholder, 3 package cards, progress t
 
 The project is locally scaffolded and ready for environment configuration. Payment routes are implemented but require real Supabase, Stripe, and PayPal credentials to exercise end-to-end.
 
+Firebase Auth has been added as a client-only `/login` flow. It requires Firebase web app env variables and enabled providers in Firebase Console before it can authenticate real users.
+
 ## Blockers and Risks
 
 - Live payment testing requires provider credentials and webhook setup.
 - Supabase table must be created before real progress persistence works.
 - `npm audit --omit=dev` reports 2 moderate advisories through Next/PostCSS; npm suggests a breaking forced downgrade path, so it was not auto-applied.
+- Google, Facebook, and Email/Password sign-in require Firebase provider setup and authorized domains.
 
 ## Recommended Next Action
 

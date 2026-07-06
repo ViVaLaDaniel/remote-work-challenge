@@ -48,6 +48,17 @@ PAYPAL_CLIENT_SECRET=
 PAYPAL_WEBHOOK_ID=
 ```
 
+Required for Firebase Auth:
+
+```bash
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+```
+
 ### 3. Configure Stripe Checkout
 
 Create a Stripe account and use a secret key in `STRIPE_SECRET_KEY`. The app creates Checkout Sessions dynamically from server-side package mapping:
@@ -170,6 +181,34 @@ Copy the returned signing secret into `STRIPE_WEBHOOK_SECRET`, then complete a t
 ### 12. Test PayPal sandbox
 
 Use sandbox buyer and merchant accounts from PayPal Developer Dashboard. Add sandbox REST app credentials, open `/challenge`, and complete the PayPal button flow. Confirm that the captured payment appears once in `/api/challenge/progress`.
+
+### 13. Configure Firebase Auth
+
+Fastest stable setup:
+
+1. Create a Firebase project on the free Spark plan.
+2. Add a Web app in Firebase Project Settings.
+3. Copy the web config into the `NEXT_PUBLIC_FIREBASE_*` environment variables.
+4. In Firebase Console, open Authentication > Sign-in method.
+5. Enable Email/Password.
+6. Enable Google.
+7. Enable Facebook.
+8. Add the Vercel domain to Authentication > Settings > Authorized domains:
+
+```text
+remote-work-challenge.vercel.app
+```
+
+For Facebook login, create a Meta app and copy the Facebook App ID/App Secret into the Firebase Facebook provider screen. Firebase will show the OAuth redirect URI that must be added in the Meta app settings.
+
+The app includes `/login` with:
+
+- Google sign-in
+- Facebook sign-in
+- Email/password sign-in
+- Email/password account creation
+- Password reset email
+- Signed-in user state and sign-out
 
 ## Security Notes
 

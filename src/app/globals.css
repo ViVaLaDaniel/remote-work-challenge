@@ -99,11 +99,18 @@ button {
 .home-card a {
 	display: inline-flex;
 	margin-top: 28px;
+	margin-right: 10px;
 	padding: 13px 18px;
 	border-radius: 999px;
 	background: linear-gradient(135deg, var(--blue), var(--cyan));
 	color: #02101c;
 	font-weight: 800;
+}
+
+.home-card a + a {
+	border: 1px solid rgba(176, 216, 255, 0.22);
+	background: rgba(255, 255, 255, 0.07);
+	color: #e8f5ff;
 }
 
 .eyebrow {
@@ -504,6 +511,122 @@ button {
 .error-note {
 	color: #fecdd3;
 	background: rgba(251, 113, 133, 0.11);
+}
+
+.auth-shell {
+	min-height: 100vh;
+	display: grid;
+	place-items: center;
+	padding: 24px;
+}
+
+.auth-card {
+	width: min(560px, 100%);
+	border: 1px solid var(--border);
+	border-radius: 28px;
+	background: var(--surface);
+	box-shadow: 0 22px 70px rgba(0, 0, 0, 0.28);
+	backdrop-filter: blur(18px);
+	padding: clamp(24px, 6vw, 44px);
+}
+
+.auth-card h1 {
+	margin-top: 10px;
+	font-size: clamp(2.4rem, 9vw, 4.8rem);
+	line-height: 0.95;
+}
+
+.auth-card p {
+	margin-top: 14px;
+	color: var(--muted);
+	line-height: 1.7;
+}
+
+.social-auth-grid,
+.auth-actions {
+	display: grid;
+	gap: 12px;
+	margin-top: 24px;
+}
+
+.auth-divider {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin: 24px 0;
+	color: var(--muted);
+	font-size: 0.86rem;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+	content: "";
+	height: 1px;
+	flex: 1;
+	background: var(--border);
+}
+
+.auth-form {
+	display: grid;
+	gap: 14px;
+}
+
+.auth-form label {
+	display: grid;
+	gap: 8px;
+	color: #d9ebfb;
+	font-weight: 760;
+}
+
+.auth-form input {
+	width: 100%;
+	border: 1px solid rgba(176, 216, 255, 0.22);
+	border-radius: 16px;
+	background: rgba(255, 255, 255, 0.07);
+	color: var(--foreground);
+	padding: 14px 15px;
+	outline: none;
+}
+
+.auth-form input:focus {
+	border-color: rgba(34, 211, 238, 0.72);
+	box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.12);
+}
+
+.auth-footer {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	justify-content: space-between;
+	margin-top: 18px;
+}
+
+.text-button {
+	color: var(--cyan);
+	background: transparent;
+	cursor: pointer;
+	font-weight: 760;
+}
+
+.text-button:disabled {
+	cursor: not-allowed;
+	opacity: 0.54;
+}
+
+.signed-in-card {
+	display: grid;
+	gap: 6px;
+	margin-top: 22px;
+	border: 1px solid rgba(176, 216, 255, 0.22);
+	border-radius: 18px;
+	background: rgba(255, 255, 255, 0.07);
+	padding: 18px;
+}
+
+.signed-in-card span {
+	color: var(--muted);
 }
 
 @media (min-width: 720px) {
