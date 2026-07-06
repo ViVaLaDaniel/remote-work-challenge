@@ -13,7 +13,6 @@ export default function Page() {
 				packages={Object.values(challengePackages)}
 				paypalClientId={process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? ""}
 				stripeConfigured={Boolean(process.env.STRIPE_SECRET_KEY)}
-				youtubeLiveId={process.env.NEXT_PUBLIC_YOUTUBE_LIVE_ID ?? ""}
 			/>
 		</Suspense>
 	);

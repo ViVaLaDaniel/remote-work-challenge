@@ -67,7 +67,7 @@ export function AuthPanel() {
 				<h1>Login is ready for Firebase config</h1>
 				<p>
 					Add Firebase web app environment variables in Vercel, then enable
-					Email/Password, Google and Facebook providers in Firebase Console.
+					Email/Password and Google providers in Firebase Console.
 				</p>
 				<Link className="button primary" href="/challenge">
 					Back to challenge
@@ -138,8 +138,8 @@ export function AuthPanel() {
 			<p className="section-kicker">Firebase Auth</p>
 			<h1>{mode === "signin" ? "Sign in" : "Create account"}</h1>
 			<p>
-				Use Google, Facebook, or normal email and password. The browser talks
-				directly to Firebase Auth; no secret keys are exposed.
+				Use Google or normal email and password. The browser talks directly to
+				Firebase Auth; no secret keys are exposed.
 			</p>
 
 			<div className="social-auth-grid">
@@ -154,18 +154,6 @@ export function AuthPanel() {
 					type="button"
 				>
 					Continue with Google
-				</button>
-				<button
-					className="button secondary"
-					disabled={loading}
-					onClick={() =>
-						runAuthAction(() =>
-							signInWithPopup(firebase.auth, firebase.facebookProvider),
-						)
-					}
-					type="button"
-				>
-					Continue with Facebook
 				</button>
 			</div>
 

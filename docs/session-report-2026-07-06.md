@@ -6,7 +6,7 @@
 
 ## Goal
 
-Create a new production-ready public `/challenge` project for a 48-hour remote work challenge with live countdown, live stream embed, Stripe and PayPal paid task packages, Supabase-backed progress, and privacy-safe public updates.
+Create a new production-ready public `/challenge` project for a 48-hour remote work challenge with live countdown, Stripe and PayPal paid task packages, Supabase-backed progress, and privacy-safe public updates.
 
 ## Changed
 
@@ -15,7 +15,7 @@ Create a new production-ready public `/challenge` project for a 48-hour remote w
 - Added sanitized progress endpoint.
 - Added Stripe Checkout creation and verified webhook route.
 - Added PayPal create-order and capture-order flow.
-- Added Supabase migration for `challenge_payments`.
+- Added Supabase migration for `payments` and `task_requests`.
 - Added `.env.example`.
 - Replaced default README with challenge setup instructions.
 
@@ -35,7 +35,7 @@ Also verified `/challenge` through a local production server on `127.0.0.1:3002`
 - Desktop: `1440x1100`
 - Mobile: `390x1200`
 
-Observed status `200`, correct H1, live placeholder, 3 package cards, progress text, no horizontal overflow, and no browser console errors. The timer used runtime `NEXT_PUBLIC_CHALLENGE_END_AT` after making `/challenge` dynamic.
+Observed status `200`, correct H1, 3 package cards, progress text, no horizontal overflow, and no browser console errors. The timer used runtime `NEXT_PUBLIC_CHALLENGE_END_AT` after making `/challenge` dynamic.
 
 ## Current State
 
@@ -48,7 +48,7 @@ Firebase Auth has been added as a client-only `/login` flow. It requires Firebas
 - Live payment testing requires provider credentials and webhook setup.
 - Supabase table must be created before real progress persistence works.
 - `npm audit --omit=dev` reports 2 moderate advisories through Next/PostCSS; npm suggests a breaking forced downgrade path, so it was not auto-applied.
-- Google, Facebook, and Email/Password sign-in require Firebase provider setup and authorized domains.
+- Google and Email/Password sign-in require Firebase provider setup and authorized domains.
 
 ## Recommended Next Action
 

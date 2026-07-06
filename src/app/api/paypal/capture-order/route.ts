@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { capturePaypalOrder } from "@/lib/paypal";
-import { insertChallengePayment } from "@/lib/supabaseAdmin";
+import { completePayment } from "@/lib/supabaseAdmin";
+import { notifyTelegram } from "@/lib/telegram";
 
 export async function POST(request: Request) {
 	const body = (await request.json().catch(() => null)) as {
@@ -10,17 +11,17 @@ export async function POST(request: Request) {
 	try {
 		const capture = await capturePaypalOrder(body?.orderId);
 
-		await insertChallengePayment({
+		await completePayment({
 			provider: "paypal",
-			provider_payment_id: capture.captureId,
-			amount_cents: capture.amountCents,
-			currency: "EUR",
-			amount_eur_cents: capture.amountCents,
-			status: "confirmed",
-			package_id: capture.packageId,
-			public_note: capture.publicNote,
-			raw: capture.raw,
+			providerRef: String(body?.orderId),
+			amountCents: capture.amountCents,
+			packageKey: capture.packageKey,
+			displayLabel: `Anonymous - ${capture.taskPackage.label}`,
 		});
+
+		notifyTelegram(
+			`Paid task confirmed via PayPal: EUR ${capture.taskPackage.priceEur} - ${capture.taskPackage.label}`,
+		);
 
 		return NextResponse.json({ ok: true });
 	} catch (error) {

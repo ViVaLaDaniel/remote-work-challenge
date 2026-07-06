@@ -395,6 +395,29 @@ button {
 	font-weight: 780;
 }
 
+.process-list {
+	display: grid;
+	gap: 12px;
+}
+
+.process-list div {
+	display: grid;
+	gap: 6px;
+	border: 1px solid rgba(176, 216, 255, 0.18);
+	border-radius: 18px;
+	background: rgba(255, 255, 255, 0.055);
+	padding: 18px;
+}
+
+.process-list strong {
+	color: #ffffff;
+}
+
+.process-list span {
+	color: var(--muted);
+	line-height: 1.55;
+}
+
 .section-heading {
 	max-width: 680px;
 }
@@ -452,6 +475,50 @@ button {
 	margin-top: 12px;
 	color: var(--muted);
 	line-height: 1.6;
+}
+
+.task-intake-card {
+	display: grid;
+	gap: 14px;
+	margin-top: 24px;
+	border: 1px solid rgba(176, 216, 255, 0.18);
+	border-radius: 22px;
+	background: rgba(255, 255, 255, 0.055);
+	padding: 18px;
+}
+
+.task-intake-card label {
+	display: grid;
+	gap: 8px;
+	color: #d9ebfb;
+	font-weight: 760;
+}
+
+.task-intake-card textarea,
+.task-intake-card input {
+	width: 100%;
+	border: 1px solid rgba(176, 216, 255, 0.22);
+	border-radius: 16px;
+	background: rgba(255, 255, 255, 0.07);
+	color: var(--foreground);
+	padding: 14px 15px;
+	outline: none;
+}
+
+.task-intake-card textarea {
+	min-height: 128px;
+	resize: vertical;
+}
+
+.task-intake-card textarea:focus,
+.task-intake-card input:focus {
+	border-color: rgba(34, 211, 238, 0.72);
+	box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.12);
+}
+
+.task-contact-grid {
+	display: grid;
+	gap: 12px;
 }
 
 .payment-actions {
@@ -629,6 +696,145 @@ button {
 	color: var(--muted);
 }
 
+.terms-link {
+	display: inline-flex;
+	margin-top: 18px;
+	color: var(--cyan);
+	font-weight: 800;
+}
+
+.legal-shell {
+	width: min(880px, calc(100% - 32px));
+	margin: 0 auto;
+	padding: 42px 0 64px;
+}
+
+.legal-card {
+	border: 1px solid var(--border);
+	border-radius: 28px;
+	background: var(--surface);
+	box-shadow: 0 22px 70px rgba(0, 0, 0, 0.28);
+	backdrop-filter: blur(18px);
+	padding: clamp(24px, 6vw, 54px);
+}
+
+.legal-card h1 {
+	margin-top: 10px;
+	font-size: clamp(2.4rem, 9vw, 5rem);
+	line-height: 0.95;
+}
+
+.legal-card h2 {
+	margin-top: 30px;
+	font-size: clamp(1.35rem, 4vw, 2rem);
+}
+
+.legal-card p {
+	margin-top: 14px;
+	color: var(--muted);
+	line-height: 1.75;
+}
+
+.legal-card .button {
+	margin-top: 28px;
+}
+
+.admin-page {
+	width: min(1180px, calc(100% - 32px));
+	margin: 0 auto;
+	padding: 34px 0 64px;
+}
+
+.admin-shell {
+	display: grid;
+	gap: 18px;
+}
+
+.admin-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	border: 1px solid var(--border);
+	border-radius: 28px;
+	background: var(--surface);
+	box-shadow: 0 22px 70px rgba(0, 0, 0, 0.28);
+	backdrop-filter: blur(18px);
+	padding: clamp(22px, 5vw, 38px);
+}
+
+.admin-header h1 {
+	margin-top: 8px;
+	font-size: clamp(2.2rem, 7vw, 4.5rem);
+	line-height: 0.95;
+}
+
+.admin-list {
+	display: grid;
+	gap: 14px;
+}
+
+.admin-card {
+	display: grid;
+	gap: 14px;
+	border: 1px solid var(--border);
+	border-radius: 22px;
+	background: var(--surface);
+	box-shadow: 0 22px 70px rgba(0, 0, 0, 0.2);
+	backdrop-filter: blur(18px);
+	padding: 20px;
+}
+
+.admin-card-head,
+.admin-meta,
+.admin-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.admin-card-head span,
+.admin-meta span {
+	color: var(--muted);
+}
+
+.admin-card p {
+	color: #dbeafe;
+	line-height: 1.65;
+}
+
+.admin-pill {
+	border: 1px solid rgba(176, 216, 255, 0.22);
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.07);
+	padding: 6px 10px;
+}
+
+.admin-card label {
+	display: grid;
+	gap: 8px;
+	color: #d9ebfb;
+	font-weight: 760;
+}
+
+.admin-card input,
+.admin-card textarea {
+	width: 100%;
+	border: 1px solid rgba(176, 216, 255, 0.22);
+	border-radius: 16px;
+	background: rgba(255, 255, 255, 0.07);
+	color: var(--foreground);
+	padding: 12px 14px;
+	outline: none;
+}
+
+.admin-card textarea {
+	min-height: 80px;
+	resize: vertical;
+}
+
 @media (min-width: 720px) {
 	.challenge-shell {
 		width: min(1180px, calc(100% - 56px));
@@ -641,6 +847,10 @@ button {
 	.metric-grid,
 	.package-grid {
 		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.task-contact-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
 	.help-grid {

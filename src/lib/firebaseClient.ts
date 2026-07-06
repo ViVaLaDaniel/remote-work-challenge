@@ -1,18 +1,12 @@
 "use client";
 
 import { type FirebaseApp, getApp, getApps, initializeApp } from "firebase/app";
-import {
-	type Auth,
-	FacebookAuthProvider,
-	GoogleAuthProvider,
-	getAuth,
-} from "firebase/auth";
+import { type Auth, GoogleAuthProvider, getAuth } from "firebase/auth";
 
 type FirebaseClient = {
 	app: FirebaseApp;
 	auth: Auth;
 	googleProvider: GoogleAuthProvider;
-	facebookProvider: FacebookAuthProvider;
 };
 
 export function isFirebaseConfigured() {
@@ -45,7 +39,6 @@ export function getFirebaseClient(): FirebaseClient | null {
 	return {
 		app,
 		auth: getAuth(app),
-		facebookProvider: new FacebookAuthProvider(),
 		googleProvider: new GoogleAuthProvider(),
 	};
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getGoalEur } from "@/lib/packages";
-import { getConfirmedChallengePayments } from "@/lib/supabaseAdmin";
+import { getChallengeProgressData } from "@/lib/supabaseAdmin";
 
 export const dynamic = "force-dynamic";
 
@@ -8,9 +8,10 @@ export async function GET() {
 	const goalEur = getGoalEur();
 
 	try {
-		const { payments, configured } = await getConfirmedChallengePayments();
-		const totalCents = payments.reduce(
-			(sum, payment) => sum + payment.amount_eur_cents,
+		const { completedPayments, publicPayments, configured } =
+			await getChallengeProgressData();
+		const totalCents = completedPayments.reduce(
+			(sum, payment) => sum + payment.amount_cents,
 			0,
 		);
 		const totalEur = totalCents / 100;
@@ -21,11 +22,13 @@ export async function GET() {
 			totalEur,
 			totalCents,
 			percentage,
-			paymentsCount: payments.length,
-			recentPayments: payments.slice(0, 10).map((payment) => ({
-				amountEur: payment.amount_eur_cents / 100,
-				publicNote: payment.public_note ?? "Paid digital task",
-				provider: payment.provider,
+			paymentsCount: completedPayments.length,
+			recentPayments: publicPayments.map((payment) => ({
+				amountEur: payment.amount_cents / 100,
+				publicNote:
+					payment.display_label ??
+					`Anonymous - EUR ${payment.package} task completed`,
+				provider: "paid_task",
 				createdAt: payment.created_at,
 			})),
 			configured,

@@ -1,4 +1,4 @@
-import { getPackageOrNull } from "@/lib/packages";
+import { getPackageOrNull, type PackageKey } from "@/lib/packages";
 
 type PaypalTokenResponse = {
 	access_token?: string;
@@ -6,13 +6,14 @@ type PaypalTokenResponse = {
 
 type PaypalOrderResponse = {
 	id?: string;
-};
-
-type PaypalCaptureResponse = {
-	id?: string;
 	status?: string;
 	purchase_units?: Array<{
 		reference_id?: string;
+		custom_id?: string;
+		amount?: {
+			currency_code?: string;
+			value?: string;
+		};
 		payments?: {
 			captures?: Array<{
 				id?: string;
@@ -62,10 +63,10 @@ async function getPaypalAccessToken() {
 	return data.access_token;
 }
 
-export async function createPaypalOrder(packageId: unknown) {
-	const taskPackage = getPackageOrNull(packageId);
+export async function createPaypalOrder(packageKey: unknown) {
+	const taskPackage = getPackageOrNull(packageKey);
 	if (!taskPackage) {
-		throw new Error("Invalid packageId.");
+		throw new Error("Invalid package.");
 	}
 
 	const token = await getPaypalAccessToken();
@@ -79,9 +80,9 @@ export async function createPaypalOrder(packageId: unknown) {
 			intent: "CAPTURE",
 			purchase_units: [
 				{
-					reference_id: taskPackage.id,
-					custom_id: taskPackage.id,
-					description: taskPackage.publicNote,
+					reference_id: taskPackage.key,
+					custom_id: taskPackage.key,
+					description: taskPackage.label,
 					amount: {
 						currency_code: "EUR",
 						value: taskPackage.priceEur.toFixed(2),
@@ -100,7 +101,25 @@ export async function createPaypalOrder(packageId: unknown) {
 		throw new Error("PayPal did not return an order ID.");
 	}
 
-	return data.id;
+	return { orderId: data.id, taskPackage };
+}
+
+async function getPaypalOrder(orderId: string, token: string) {
+	const response = await fetch(
+		`${getPaypalBaseUrl()}/v2/checkout/orders/${encodeURIComponent(orderId)}`,
+		{
+			headers: {
+				Authorization: `Bearer ${token}`,
+				"Content-Type": "application/json",
+			},
+		},
+	);
+
+	if (!response.ok) {
+		throw new Error("Failed to verify PayPal order.");
+	}
+
+	return (await response.json()) as PaypalOrderResponse;
 }
 
 export async function capturePaypalOrder(orderId: unknown) {
@@ -109,7 +128,7 @@ export async function capturePaypalOrder(orderId: unknown) {
 	}
 
 	const token = await getPaypalAccessToken();
-	const response = await fetch(
+	const captureResponse = await fetch(
 		`${getPaypalBaseUrl()}/v2/checkout/orders/${encodeURIComponent(
 			orderId,
 		)}/capture`,
@@ -122,39 +141,40 @@ export async function capturePaypalOrder(orderId: unknown) {
 		},
 	);
 
-	if (!response.ok) {
+	if (!captureResponse.ok) {
 		throw new Error("Failed to capture PayPal order.");
 	}
 
-	const data = (await response.json()) as PaypalCaptureResponse;
-	if (data.status !== "COMPLETED") {
+	const verifiedOrder = await getPaypalOrder(orderId, token);
+	if (verifiedOrder.status !== "COMPLETED") {
 		throw new Error("PayPal order was not completed.");
 	}
 
-	const unit = data.purchase_units?.[0];
+	const unit = verifiedOrder.purchase_units?.[0];
+	const packageKey = unit?.reference_id ?? unit?.custom_id;
+	const taskPackage = getPackageOrNull(packageKey);
 	const capture = unit?.payments?.captures?.find(
 		(item) => item.status === "COMPLETED",
 	);
 	const currency = capture?.amount?.currency_code;
 	const value = capture?.amount?.value;
+	const amountCents = value
+		? Math.round(Number.parseFloat(value) * 100)
+		: Number.NaN;
 
-	if (currency !== "EUR" || !value) {
+	if (!taskPackage || currency !== "EUR") {
 		throw new Error("Only completed EUR PayPal captures can be counted.");
 	}
-
-	const amountCents = Math.round(Number.parseFloat(value) * 100);
-	if (!Number.isFinite(amountCents) || amountCents <= 0) {
-		throw new Error("Invalid PayPal capture amount.");
+	if (amountCents !== taskPackage.amountCents) {
+		throw new Error("PayPal capture amount does not match the package.");
 	}
 
-	const packageId = unit?.reference_id;
-	const taskPackage = getPackageOrNull(packageId);
-
 	return {
-		captureId: capture?.id ?? data.id ?? orderId,
+		captureId: capture?.id ?? verifiedOrder.id ?? orderId,
 		amountCents,
-		packageId: taskPackage?.id ?? null,
-		publicNote: taskPackage?.publicNote ?? "Paid digital task",
-		raw: data,
+		packageKey: taskPackage.key as PackageKey,
+		publicNote: taskPackage.publicNote,
+		taskPackage,
+		raw: verifiedOrder,
 	};
 }

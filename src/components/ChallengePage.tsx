@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import Script from "next/script";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type TaskPackage = {
-	id: string;
+	key: string;
 	title: string;
 	priceEur: number;
+	label: string;
 	description: string;
 };
 
@@ -21,7 +22,7 @@ type ProgressResponse = {
 	recentPayments: Array<{
 		amountEur: number;
 		publicNote: string;
-		provider: "stripe" | "paypal";
+		provider: string;
 		createdAt: string;
 	}>;
 	configured?: boolean;
@@ -146,16 +147,31 @@ function Countdown({ endAt }: { endAt: string }) {
 
 function PaypalButton({
 	packageId,
+	taskDescription,
+	contactEmail,
+	contactTelegram,
 	enabled,
 	onPaid,
 	onError,
 }: {
 	packageId: string;
+	taskDescription: string;
+	contactEmail: string;
+	contactTelegram: string;
 	enabled: boolean;
 	onPaid: () => void;
 	onError: (message: string) => void;
 }) {
 	const containerId = `paypal-button-${packageId}`;
+	const payloadRef = useRef({
+		contactEmail,
+		contactTelegram,
+		taskDescription,
+	});
+
+	useEffect(() => {
+		payloadRef.current = { contactEmail, contactTelegram, taskDescription };
+	}, [contactEmail, contactTelegram, taskDescription]);
 
 	useEffect(() => {
 		if (!enabled || !window.paypal) {
@@ -173,7 +189,12 @@ function PaypalButton({
 					const response = await fetch("/api/paypal/create-order", {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ packageId }),
+						body: JSON.stringify({
+							package: packageId,
+							taskDescription: payloadRef.current.taskDescription,
+							contactEmail: payloadRef.current.contactEmail,
+							contactTelegram: payloadRef.current.contactTelegram,
+						}),
 					});
 					const data = (await response.json()) as {
 						orderId?: string;
@@ -215,14 +236,12 @@ function PaypalButton({
 export function ChallengePage({
 	packages,
 	endAt,
-	youtubeLiveId,
 	contactEmail,
 	paypalClientId,
 	stripeConfigured,
 }: {
 	packages: TaskPackage[];
 	endAt: string;
-	youtubeLiveId: string;
 	contactEmail: string;
 	paypalClientId: string;
 	stripeConfigured: boolean;
@@ -232,6 +251,9 @@ export function ChallengePage({
 	const [progressError, setProgressError] = useState("");
 	const [loadingPackage, setLoadingPackage] = useState<string | null>(null);
 	const [paymentMessage, setPaymentMessage] = useState("");
+	const [taskDescription, setTaskDescription] = useState("");
+	const [contactEmailInput, setContactEmailInput] = useState("");
+	const [contactTelegram, setContactTelegram] = useState("");
 	const paypalEnabled = Boolean(paypalClientId);
 	const redirectMessage = useMemo(() => {
 		const payment = searchParams.get("payment");
@@ -269,14 +291,35 @@ export function ChallengePage({
 		};
 	}, [loadProgress]);
 
+	const validateTaskForm = () => {
+		if (taskDescription.trim().length < 10) {
+			return "Describe the task in at least 10 characters.";
+		}
+		if (!contactEmailInput.trim() && !contactTelegram.trim()) {
+			return "Add an email or Telegram handle.";
+		}
+		return "";
+	};
+
 	const handleStripe = async (packageId: string) => {
+		const validationError = validateTaskForm();
+		if (validationError) {
+			setPaymentMessage(validationError);
+			return;
+		}
+
 		setLoadingPackage(packageId);
 		setPaymentMessage("");
 		try {
 			const response = await fetch("/api/stripe/create-checkout-session", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ packageId }),
+				body: JSON.stringify({
+					package: packageId,
+					taskDescription,
+					contactEmail: contactEmailInput,
+					contactTelegram,
+				}),
 			});
 			const data = (await response.json()) as { url?: string; error?: string };
 			if (!response.ok || !data.url) {
@@ -291,25 +334,6 @@ export function ChallengePage({
 			setLoadingPackage(null);
 		}
 	};
-
-	const liveEmbed = useMemo(() => {
-		if (!youtubeLiveId) {
-			return (
-				<div className="live-placeholder">
-					Live stream will appear here when the challenge starts.
-				</div>
-			);
-		}
-
-		return (
-			<iframe
-				allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-				allowFullScreen
-				src={`https://www.youtube.com/embed/${youtubeLiveId}`}
-				title="48-Hour Remote Work Challenge Live"
-			/>
-		);
-	}, [youtubeLiveId]);
 
 	return (
 		<main className="challenge-shell">
@@ -326,7 +350,6 @@ export function ChallengePage({
 				</Link>
 				<div>
 					<a href="#packages">Tasks</a>
-					<a href="#live">Live</a>
 					<a href="#contact">Contact</a>
 					<Link href="/login">Login</Link>
 				</div>
@@ -346,8 +369,8 @@ export function ChallengePage({
 								Send me a task
 							</a>
 						) : null}
-						<a className="button secondary" href="#live">
-							Watch live
+						<a className="button secondary" href="#packages">
+							Choose a package
 						</a>
 					</div>
 					{visiblePaymentMessage ? (
@@ -376,16 +399,32 @@ export function ChallengePage({
 				</aside>
 			</section>
 
-			<section className="section split" id="live">
+			<section className="section split">
 				<div>
-					<p className="section-kicker">Live Workroom</p>
-					<h2>Watch the challenge in real time.</h2>
+					<p className="section-kicker">How it works</p>
+					<h2>Simple paid tasks, clear scope, private delivery.</h2>
 					<p>
-						Client data, private chats, payment dashboards and secret keys are
-						never shown on stream.
+						Pick a package, send a task brief by email, and I confirm the scope
+						before doing the work. Public progress shows only anonymous payment
+						updates, never private task details.
 					</p>
 				</div>
-				<div className="live-frame">{liveEmbed}</div>
+				<div className="process-list">
+					<div>
+						<strong>1. Choose a package</strong>
+						<span>EUR 25, EUR 50, or EUR 100 based on scope.</span>
+					</div>
+					<div>
+						<strong>2. Pay securely</strong>
+						<span>
+							Stripe or PayPal checkout, no custom card handling here.
+						</span>
+					</div>
+					<div>
+						<strong>3. Private delivery</strong>
+						<span>Task details, client data, and messages stay private.</span>
+					</div>
+				</div>
 			</section>
 
 			<section className="section progress-section">
@@ -419,13 +458,42 @@ export function ChallengePage({
 					<p className="section-kicker">Paid task packages</p>
 					<h2>Pick a useful task</h2>
 					<p>
-						No frontend price is trusted. Package prices are validated
-						server-side.
+						Describe the task before checkout. Package prices are validated
+						server-side and never trusted from the browser.
 					</p>
+				</div>
+				<div className="task-intake-card">
+					<label>
+						<span>Task brief</span>
+						<textarea
+							onChange={(event) => setTaskDescription(event.target.value)}
+							placeholder="Example: fix a landing page section, write homepage copy, review an MVP idea, or automate a small workflow."
+							value={taskDescription}
+						/>
+					</label>
+					<div className="task-contact-grid">
+						<label>
+							<span>Email</span>
+							<input
+								onChange={(event) => setContactEmailInput(event.target.value)}
+								placeholder="you@example.com"
+								type="email"
+								value={contactEmailInput}
+							/>
+						</label>
+						<label>
+							<span>Telegram</span>
+							<input
+								onChange={(event) => setContactTelegram(event.target.value)}
+								placeholder="@username"
+								value={contactTelegram}
+							/>
+						</label>
+					</div>
 				</div>
 				<div className="package-grid">
 					{packages.map((taskPackage) => (
-						<article className="package-card" key={taskPackage.id}>
+						<article className="package-card" key={taskPackage.key}>
 							<div>
 								<h3>{taskPackage.title}</h3>
 								<strong>{formatMoney(taskPackage.priceEur)}</strong>
@@ -435,20 +503,21 @@ export function ChallengePage({
 								<button
 									className="button primary"
 									disabled={
-										!stripeConfigured || loadingPackage === taskPackage.id
+										!stripeConfigured || loadingPackage === taskPackage.key
 									}
-									onClick={() => handleStripe(taskPackage.id)}
+									onClick={() => handleStripe(taskPackage.key)}
 									type="button"
 								>
 									{!stripeConfigured
 										? "Stripe not configured"
-										: loadingPackage === taskPackage.id
+										: loadingPackage === taskPackage.key
 											? "Opening Stripe..."
 											: "Pay with Stripe"}
 								</button>
 								<PaypalButton
 									enabled={paypalEnabled}
-									packageId={taskPackage.id}
+									contactEmail={contactEmailInput}
+									contactTelegram={contactTelegram}
 									onError={setPaymentMessage}
 									onPaid={() => {
 										setPaymentMessage("PayPal payment confirmed.");
@@ -456,6 +525,8 @@ export function ChallengePage({
 											setProgressError("Progress unavailable."),
 										);
 									}}
+									packageId={taskPackage.key}
+									taskDescription={taskDescription}
 								/>
 							</div>
 						</article>
@@ -479,7 +550,6 @@ export function ChallengePage({
 									{formatMoney(payment.amountEur)} — {payment.publicNote}
 								</strong>
 								<span>
-									{payment.provider === "stripe" ? "Stripe" : "PayPal"} •{" "}
 									{new Date(payment.createdAt).toLocaleString("en-IE", {
 										day: "2-digit",
 										hour: "2-digit",
@@ -538,8 +608,11 @@ export function ChallengePage({
 					This is not a donation campaign. I only accept real paid tasks. Public
 					progress shows only safe anonymous payment/task updates. Client names,
 					emails, private messages, payment dashboards and secret keys are never
-					shown publicly or on stream.
+					shown publicly.
 				</p>
+				<Link className="terms-link" href="/legal">
+					Terms & refund policy
+				</Link>
 			</section>
 		</main>
 	);

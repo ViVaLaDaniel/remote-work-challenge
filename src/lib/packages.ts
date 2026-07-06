@@ -1,40 +1,54 @@
-export const challengePackages = {
-	quick_task: {
-		id: "quick_task",
-		title: "Quick Digital Task",
-		priceEur: 25,
+export const PACKAGES = {
+	"25": {
+		key: "25",
 		amountCents: 2500,
-		publicNote: "Quick digital task",
-		description: "Small website, text, AI or IT fix.",
+		priceEur: 25,
+		title: "Quick Fix / Small Script",
+		label: "Quick fix / small script",
+		publicNote: "Quick fix completed",
+		description:
+			"One small paid digital task: website fix, text edit, AI setup, script, or remote IT fix. Scope is confirmed before work starts.",
+		stripePriceEnv: "STRIPE_PRICE_QUICK_TASK",
 	},
-	website_task: {
-		id: "website_task",
-		title: "Website / Copywriting Task",
-		priceEur: 50,
+	"50": {
+		key: "50",
 		amountCents: 5000,
-		publicNote: "Website task",
+		priceEur: 50,
+		title: "Landing Section / Integration",
+		label: "Landing section / integration",
+		publicNote: "Website task completed",
 		description:
-			"Landing page improvement, website update, copywriting or small frontend task.",
+			"A focused website or copywriting task: landing page section, content improvement, small frontend update, or business website edit.",
+		stripePriceEnv: "STRIPE_PRICE_WEBSITE_TASK",
 	},
-	mvp_consultation: {
-		id: "mvp_consultation",
-		title: "MVP / Automation Consultation",
-		priceEur: 100,
+	"100": {
+		key: "100",
 		amountCents: 10000,
-		publicNote: "MVP consultation",
+		priceEur: 100,
+		title: "Full Feature / Automation",
+		label: "Full feature / automation",
+		publicNote: "MVP or automation task completed",
 		description:
-			"Startup idea review, MVP planning, AI automation or technical consultation.",
+			"A paid planning session for a startup idea, MVP scope, AI automation workflow, technical review, or implementation roadmap.",
+		stripePriceEnv: "STRIPE_PRICE_MVP_CONSULTATION",
 	},
 } as const;
 
-export type PackageId = keyof typeof challengePackages;
+export const challengePackages = PACKAGES;
 
-export function isPackageId(value: unknown): value is PackageId {
-	return typeof value === "string" && value in challengePackages;
+export type PackageKey = keyof typeof PACKAGES;
+
+export function isPackageKey(value: unknown): value is PackageKey {
+	return typeof value === "string" && value in PACKAGES;
 }
 
 export function getPackageOrNull(value: unknown) {
-	return isPackageId(value) ? challengePackages[value] : null;
+	return isPackageKey(value) ? PACKAGES[value] : null;
+}
+
+export function getStripePriceId(taskPackage: { stripePriceEnv: string }) {
+	const priceId = process.env[taskPackage.stripePriceEnv];
+	return priceId?.startsWith("price_") ? priceId : null;
 }
 
 export function getGoalEur() {

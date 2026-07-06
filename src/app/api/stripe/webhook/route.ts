@@ -1,7 +1,9 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { insertChallengePayment } from "@/lib/supabaseAdmin";
+import { getPackageOrNull, type PackageKey } from "@/lib/packages";
+import { completePayment } from "@/lib/supabaseAdmin";
+import { notifyTelegram } from "@/lib/telegram";
 
 export const dynamic = "force-dynamic";
 
@@ -36,30 +38,30 @@ export async function POST(request: Request) {
 	}
 
 	const session = event.data.object;
+	const packageKey = session.metadata?.package;
+	const taskPackage = getPackageOrNull(packageKey);
 	const amountTotal = session.amount_total;
-	const currency = session.currency?.toUpperCase();
+	const currency = session.currency?.toLowerCase();
 
-	if (currency !== "EUR" || !amountTotal) {
+	if (
+		!taskPackage ||
+		currency !== "eur" ||
+		amountTotal !== taskPackage.amountCents
+	) {
 		return NextResponse.json({ received: true, counted: false });
 	}
 
-	const paymentIntent =
-		typeof session.payment_intent === "string"
-			? session.payment_intent
-			: session.id;
-
-	await insertChallengePayment({
+	await completePayment({
 		provider: "stripe",
-		provider_event_id: event.id,
-		provider_payment_id: paymentIntent,
-		amount_cents: amountTotal,
-		currency,
-		amount_eur_cents: amountTotal,
-		status: "confirmed",
-		package_id: session.metadata?.package_id ?? null,
-		public_note: session.metadata?.public_note ?? "Paid digital task",
-		raw: event,
+		providerRef: session.id,
+		amountCents: taskPackage.amountCents,
+		packageKey: taskPackage.key as PackageKey,
+		displayLabel: `Anonymous - ${taskPackage.label}`,
 	});
+
+	notifyTelegram(
+		`Paid task confirmed via Stripe: EUR ${taskPackage.priceEur} - ${taskPackage.label}`,
+	);
 
 	return NextResponse.json({ received: true, counted: true });
 }
